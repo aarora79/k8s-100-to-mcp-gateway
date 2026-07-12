@@ -39,7 +39,7 @@ By the end you will have:
 
 The whole point is that you can bounce between **Claude (Cowork)** and **Claude Code** in VS Code.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  1. Read a phase file in phases/                             │
 │  2. Run the hands-on commands in the VS Code terminal        │
@@ -62,7 +62,7 @@ Suggested VS Code extensions (install in Phase 0):
 ## The roadmap
 
 | Phase | File | What you learn | Level |
-|------:|------|----------------|-------|
+| ----: | ---- | -------------- | ----- |
 | 0 | [phases/00-prerequisites.md](phases/00-prerequisites.md) | Set up your Mac: Homebrew, Docker, kubectl, VS Code | 100 |
 | 1 | [phases/01-containers-101.md](phases/01-containers-101.md) | What a container is; Docker basics by hand | 100 |
 | 2 | [phases/02-kubernetes-concepts.md](phases/02-kubernetes-concepts.md) | Why Kubernetes exists; the core objects & architecture | 100 |
@@ -73,6 +73,8 @@ Suggested VS Code extensions (install in Phase 0):
 | 7 | [phases/07-helm-packaging.md](phases/07-helm-packaging.md) | Helm: installing and templating apps | 200 |
 | 8 | [phases/08-multi-service-app.md](phases/08-multi-service-app.md) | Deploy a realistic multi-container app end-to-end | 250 |
 | 9 | [phases/09-capstone-mcp-gateway.md](phases/09-capstone-mcp-gateway.md) | **Capstone:** run `mcp-gateway-registry` on Kubernetes | 300 |
+| 10 | [phases/10-beyond-the-capstone.md](phases/10-beyond-the-capstone.md) | Requests/limits, autoscaling (HPA, Karpenter), node affinity & taints | 350 |
+| 11 | [phases/11-capstone-2-llm-serving.md](phases/11-capstone-2-llm-serving.md) | **Capstone 2:** serve an open-source LLM (Gemma 4) + Prometheus/Grafana, with a vLLM/GPU cloud track | 350 |
 
 Reference material you'll come back to:
 

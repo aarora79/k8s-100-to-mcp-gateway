@@ -93,7 +93,43 @@ clusters. (Phase 8)
 Simpler than Kubernetes; how `mcp-gateway-registry` ships. (Phase 9)
 
 **Resource requests / limits** — how much CPU/RAM a container asks for / is capped at; guides the
-scheduler.
+scheduler. (Phase 10)
+
+**OOMKilled** — a container exceeded its memory limit and was killed. Check `describe pod` for
+the reason and restart count. (Phases 10–11)
+
+**metrics-server** — the add-on that collects live CPU/RAM usage; powers `kubectl top` and the
+HPA. (Phase 10)
+
+**HPA (Horizontal Pod Autoscaler)** — a controller that automatically adjusts a Deployment's
+replica count to hold a metric (usually CPU % of *requests*) at a target, within a min/max range.
+(Phase 10)
+
+**Cluster Autoscaler / Karpenter** — controllers that add or remove *nodes* when Pods can't be
+scheduled. Karpenter is the modern one: it provisions right-sized machines from the Pending Pods'
+actual requirements. Cloud-only. (Phase 10)
+
+**EKS Auto Mode** — AWS-managed EKS compute: AWS runs Karpenter and manages the nodes for you
+(GKE's equivalent is Autopilot). (Phase 10)
+
+**nodeSelector / node affinity** — ways a Pod *chooses* nodes by label. `nodeSelector` is
+all-or-nothing; affinity adds `required` (hard) vs `preferred` (soft) rules. (Phase 10)
+
+**Taint / toleration** — the inverse: a *node repels* all Pods except those that explicitly
+tolerate the taint. How special nodes (control plane, GPU) are reserved. (Phase 10)
+
+**Pod affinity / anti-affinity** — scheduling rules relative to other *Pods*; anti-affinity
+spreads replicas across nodes so one machine can't take them all down. (Phase 10)
+
+**Prometheus** — the standard Kubernetes metrics system: scrapes `/metrics` endpoints on a
+schedule and stores the time series. (Phase 11)
+
+**Grafana** — dashboards over Prometheus (and other sources). Installed together with Prometheus
+via the `kube-prometheus-stack` Helm chart. (Phase 11)
+
+**vLLM / Ollama** — open-source LLM serving engines. vLLM is the production standard on NVIDIA
+GPUs (and exposes native Prometheus metrics); Ollama is the pragmatic multi-arch choice for
+local/CPU serving. Both speak the OpenAI-compatible API. (Phase 11)
 
 **CrashLoopBackOff** — a Pod keeps crashing and Kubernetes keeps restarting it with growing delay.
 Diagnose with `describe` + `logs`.

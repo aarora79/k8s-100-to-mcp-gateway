@@ -238,3 +238,6 @@ You now understand *both*, which is the whole point. That's a real, employable s
 **You did it.** From "very basic understanding" to a real, multi-service application running on
 Kubernetes that *you* translated and deployed. Revisit [reference/](../reference/) any time, and
 keep the Compose version around as your oracle.
+
+**Next (optional, recommended):** [Phase 10 — Beyond the capstone](10-beyond-the-capstone.md) —
+resource management, autoscaling, and controlling where Pods run.
