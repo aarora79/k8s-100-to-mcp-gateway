@@ -40,7 +40,36 @@ You'll write YAML files describing objects, and apply them with `kubectl apply -
 
 ## The architecture (just enough)
 
-A Kubernetes **cluster** has two kinds of machines (on your Mac, both roles run inside one VM):
+Three words first, because everything below hangs off them:
+
+- A **node** is one machine (a physical server, a cloud VM — or, locally, a VM/container on
+  your Mac pretending to be one). Nodes are where your containers actually run.
+- A **cluster** is the whole thing: a set of nodes plus the brain that coordinates them,
+  acting as *one* logical computer. You say "run this app"; the cluster decides which node.
+- On real clusters, worker nodes usually come in **node groups** (cloud providers say "node
+  pools"): sets of identical machines managed as a unit — e.g. "six 16GB general-purpose
+  nodes" plus "two GPU nodes." Locally you won't see these; they return in Phase 10 when we
+  talk about clusters that grow and shrink themselves.
+
+```text
+                        ┌─────────────────────── cluster ───────────────────────┐
+                        │                                                        │
+                        │   ┌────────────────┐                                   │
+      you ── kubectl ──►│   │ control plane  │  the brain (usually its own node) │
+                        │   └───────┬────────┘                                   │
+                        │           │ tells nodes what to run                    │
+                        │     ┌─────┴──────┬─────────────┐                       │
+                        │     ▼            ▼             ▼                       │
+                        │  ┌──────┐    ┌──────┐      ┌──────┐                    │
+                        │  │node 1│    │node 2│      │node 3│   the workers      │
+                        │  │ Pods │    │ Pods │      │ Pods │                    │
+                        │  └──────┘    └──────┘      └──────┘                    │
+                        └────────────────────────────────────────────────────────┘
+```
+
+On your Mac, the entire box above collapses into one node that plays both roles (Docker
+Desktop), or a handful of containers pretending to be nodes (`kind`, Phase 8). Now the two
+kinds of machines in detail:
 
 **Control plane** — the brain. Key parts:
 

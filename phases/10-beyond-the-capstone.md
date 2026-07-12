@@ -129,7 +129,9 @@ they need a cloud, but know them by name:
 
 - **Vertical Pod Autoscaler (VPA)** — resizes a Pod's *requests* instead of the replica count.
 - **Cluster Autoscaler** — adds/removes whole **nodes** when Pods go `Pending` for lack of room.
-  The classic implementation grows pre-defined node groups.
+  The classic implementation grows pre-defined **node groups** (Phase 2's term: sets of
+  identical machines managed as a unit, like "my pool of 16GB workers") — it can only add more
+  of what a group already contains.
 - **Karpenter** — the modern successor to the Cluster Autoscaler (born at AWS, now open source
   and CNCF-adopted). Instead of growing a fixed node group, it looks at the `Pending` Pods'
   actual requirements — CPU, memory, architecture, "needs a GPU" — and provisions exactly the

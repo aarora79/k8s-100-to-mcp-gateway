@@ -17,6 +17,10 @@ matching a declared desired state. (Phase 2)
 
 **Node** — a machine (VM or physical) that runs your containers. Locally, usually one node.
 
+**Node group / node pool** — a set of identical nodes managed as a unit (cloud clusters: "six
+general-purpose nodes" + "two GPU nodes"). What the Cluster Autoscaler grows and shrinks.
+(Phases 2, 10)
+
 **Control plane** — the "brain" of the cluster: API server, scheduler, controllers, etcd.
 
 **API server** — the front door of the cluster; everything (including `kubectl`) talks to it.
