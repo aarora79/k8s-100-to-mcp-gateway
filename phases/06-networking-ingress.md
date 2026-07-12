@@ -8,6 +8,18 @@ story, so this phase is directly load-bearing.
 
 ---
 
+## Before you start — 60 seconds of retrieval
+
+From memory:
+
+1. Why do Pods need a Service in front of them at all — what property of Pods makes direct
+   connections a bad idea? *(Phase 4)*
+2. How does a Service know *which* Pods to send traffic to? *(Hint: it's the same mechanism a
+   Deployment uses to find its Pods.)*
+3. Who resolves a Service's name to an address inside the cluster? *(Phase 2's worked example)*
+
+---
+
 ## Service types (the confusing part, made simple)
 
 A Service gives Pods a stable address. *Which* address, and who can reach it, depends on the type:
@@ -48,6 +60,46 @@ kubectl delete deployment web && kubectl delete service web
 ```
 
 You just did cross-service networking with nothing but a name.
+
+---
+
+## Break it on purpose: the empty-endpoints bug
+
+The single most common Service bug in real life is a **selector that doesn't match any Pod
+labels** — everything *looks* healthy, but traffic goes nowhere. Cause it once so you recognize
+it forever. With the `web` deployment and service from above still running, introduce a one-letter
+typo into the live Service's selector:
+
+```bash
+kubectl patch service web -p '{"spec":{"selector":{"app":"webb"}}}'   # note: webb, not web
+```
+
+Now observe the symptoms:
+
+```bash
+kubectl get pods -l app=web        # pods: Running, READY — everything looks fine!
+kubectl get service web            # service: exists, has an IP — looks fine too!
+kubectl run tester --rm -it --image=busybox -- wget -qO- --timeout=3 http://web
+#                                  # ...but this HANGS / times out
+```
+
+The tell — burn this command into memory:
+
+```bash
+kubectl get endpoints web          # ENDPOINTS: <none>   ← the smoking gun
+```
+
+A Service with no endpoints means "my selector matches zero Pods." Compare
+`kubectl get service web -o wide` (shows the selector) against `kubectl get pods --show-labels`
+and the typo jumps out. Fix it and re-verify:
+
+```bash
+kubectl patch service web -p '{"spec":{"selector":{"app":"web"}}}'
+kubectl get endpoints web          # now lists Pod IPs — traffic flows again
+```
+
+When "I can't reach my app" strikes in the capstone, `kubectl get endpoints` is check #3 in
+[reference/troubleshooting.md](../reference/troubleshooting.md) — now you've seen exactly why.
 
 ---
 
@@ -128,11 +180,22 @@ refactor to Ingress. Both are legitimate; porting faithfully first is the calmer
 
 ---
 
+## Challenge — no training wheels ✋
+
+Without looking at the YAML above: deploy `httpd:2.4` as a second app alongside `web`, give it
+its own Service, and extend (or add) an Ingress so that `httpd.localhost` reaches httpd while
+`web.localhost` still reaches nginx. Verify both with `curl`, then break one selector on purpose
+and confirm `kubectl get endpoints` catches it. Clean up everything.
+
+---
+
 ## Checkpoint ✅
 
 - [ ] Name the three Service types and when to use each.
 - [ ] Call one Service from another Pod using only its name (DNS).
+- [ ] Diagnose a wrong-selector Service using `kubectl get endpoints`.
 - [ ] Install an Ingress controller and route a hostname to a Service.
+- [ ] Complete the two-hostname challenge unaided.
 
 ---
 

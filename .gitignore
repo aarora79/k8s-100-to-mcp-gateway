@@ -1,0 +1,15 @@
+# Never commit real secret values (see manifests/README.md)
+*secret*.yaml
+*secret*.yml
+!*secret*.example.yaml
+.env
+.env.*
+*.pem
+*.key
+
+# OS / editor noise
+.DS_Store
+
+# Helm packaging artifacts (charts themselves are fine to commit)
+helm-lab/**/charts/
+helm-lab/**/*.tgz

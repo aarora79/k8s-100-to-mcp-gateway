@@ -1,10 +1,22 @@
 # Phase 7 — Helm: installing and templating apps
 
 **Goal:** use Helm to install prebuilt apps in one command, and understand templating so you can
-package your own. This is how you'll install MongoDB for the capstone without hand-writing every
-manifest.
+package your own. In the capstone you'll hand-write your manifests (that's the point of the
+learning), but Helm is how the wider ecosystem ships Kubernetes software — you need to be able to
+consume it.
 
 **Time:** ~1 hour.
+
+---
+
+## Before you start — 60 seconds of retrieval
+
+From memory:
+
+1. Roughly how many YAML files did the Phase 6 exercise need for *one* app (deployment, service,
+   ingress…)? Now imagine an app with six components. That pain is why Helm exists.
+2. How do you list pods in a namespace other than `default`? *(Phase 2's namespace section)*
+3. What's the full DNS name of a Service named `db` in namespace `data`? *(Phase 6)*
 
 ---
 
@@ -32,55 +44,64 @@ helm version
 
 ---
 
-## Use case 1: install MongoDB with one command
+## Use case 1: install a real app with one command
 
-You'll need MongoDB for the capstone. Rather than write a StatefulSet + Service + PVC by hand, use
-a community chart:
+We'll install **podinfo** — a small demo web app maintained specifically for teaching Kubernetes
+tooling (you'll meet it again in Phase 8 as our API tier):
 
 ```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add podinfo https://stefanprodan.github.io/podinfo
 helm repo update
-helm search repo bitnami/mongodb           # see it exists
+helm search repo podinfo                   # see it exists
 
-# Install into a dedicated namespace, with light settings for local use:
-kubectl create namespace data
-helm install mongo bitnami/mongodb \
-  --namespace data \
-  --set auth.rootPassword=devpassword \
-  --set persistence.size=2Gi
+# Install into a dedicated namespace, with a setting override:
+kubectl create namespace demo
+helm install my-podinfo podinfo/podinfo \
+  --namespace demo \
+  --set replicaCount=2
 
-kubectl get pods -n data --watch           # wait for the mongodb pod to be Running
+kubectl get pods -n demo --watch           # wait for 2 podinfo pods to be Running
 ```
 
-Helm just created a Deployment/StatefulSet, a Service, a Secret, and a PVC for you. Inspect what
-it made:
+One command created a Deployment (2 replicas — your `--set` took effect) and a Service. Inspect
+what it made:
 
 ```bash
-helm list -n data                          # your release
-kubectl get all -n data                    # everything the chart created
+helm list -n demo                          # your release
+kubectl get all -n demo                    # everything the chart created
+kubectl port-forward -n demo svc/my-podinfo 9898:9898
+# open http://localhost:9898 — podinfo serves a little UI so you can see it working
 ```
 
-Reach it from another Pod by its Service name (`mongo-mongodb.data.svc.cluster.local`, or
-`mongo-mongodb` from within the `data` namespace) — exactly the discovery you learned in Phase 6.
+From another Pod you'd reach it at `my-podinfo.demo.svc.cluster.local` (or `my-podinfo` from
+within the `demo` namespace) — exactly the discovery you learned in Phase 6.
 
-> **Chart specifics change over time.** If the `--set` keys above differ from what the current
-> chart expects, run `helm show values bitnami/mongodb | less` to see the real options, or ask
-> Claude Code for the current values for the version you pulled.
+> **A cautionary tale about the chart ecosystem.** For years, every Kubernetes tutorial's Helm
+> example was "install MongoDB from the Bitnami charts" — until 2025, when Bitnami withdrew its
+> free versioned images and those installs started failing with `ImagePullBackOff` (a status you
+> can now diagnose!). The lesson generalizes: **charts and registries drift.** Before installing
+> any chart, check it's maintained, run `helm show values <chart> | less` to see its *current*
+> options rather than trusting a blog post, and when an install fails, `kubectl describe pod` in
+> the release's namespace tells you whether it's an image problem or a config problem. This is
+> also why the capstone has you *write* the MongoDB manifests yourself with the official `mongo`
+> image — skills over dependencies.
 
 Uninstall when done experimenting:
 
 ```bash
-helm uninstall mongo -n data
+helm uninstall my-podinfo -n demo
 ```
 
 ---
 
 ## Use case 2: understand templating (so you can package your own)
 
-A chart is a directory. Scaffold one to see its anatomy:
+A chart is a directory. Scaffold one to see its anatomy — inside this repo, so it becomes part
+of your learning artifact (per the ground rules: commit as you go):
 
 ```bash
-cd ~   # or wherever you keep scratch work
+cd <this-repo>            # the k8s learning repo root
+mkdir -p helm-lab && cd helm-lab
 helm create demo-chart
 ls demo-chart
 #   Chart.yaml        <- chart metadata (name, version)
@@ -112,18 +133,39 @@ keep the learning focused — templating is a nice later refactor.
 
 ---
 
+## Challenge — no training wheels ✋
+
+Using `helm-lab/demo-chart` and no copy-paste from above:
+
+1. Render the chart with 5 replicas and image tag `1.27` using only `--set` flags, and confirm
+   both values landed in the output (`helm template ... | grep ...`).
+2. Now achieve the same via a custom values file (`my-values.yaml` + `-f`) instead of `--set`.
+3. Install it as release `challenge` into namespace `demo`, verify with `helm list` and
+   `kubectl get all -n demo`, then uninstall and delete the namespace.
+
+---
+
 ## Checkpoint ✅
 
-- [ ] Install and inspect an app (MongoDB) via a Helm chart.
+- [ ] Install, inspect, and uninstall an app (podinfo) via a Helm chart.
 - [ ] Explain chart vs release, and what `values.yaml` is for.
 - [ ] Render a chart's templates without installing (`helm template`).
+- [ ] Complete the challenge using both `--set` and a values file.
 
 ---
 
 ## Ask Claude Code
 
-> I installed `bitnami/mongodb` with Helm into the `data` namespace. Show me how to connect to it
-> from a temporary `mongosh` pod using the Service name and the root password I set, so I can
-> confirm it works.
+**Teach-back:**
+
+> I just learned Helm basics. Quiz me one question at a time on: chart vs release vs repo, where
+> values come from (`values.yaml` vs `-f` vs `--set`, and which wins), and what `helm template`
+> does vs `helm install`. Correct me where I'm fuzzy.
+
+**Go deeper:**
+
+> I installed `podinfo/podinfo` with Helm into the `demo` namespace. Show me how to upgrade the
+> release to change a value (`helm upgrade`), see its history, and roll back (`helm rollback`) —
+> and explain how that compares to `kubectl rollout undo` from Phase 4.
 
 **Next:** [Phase 8 — A realistic multi-service app](08-multi-service-app.md)

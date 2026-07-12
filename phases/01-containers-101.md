@@ -96,12 +96,25 @@ HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
 `Dockerfile` (the recipe for the image):
 
 ```dockerfile
-FROM python:3.12-slim        # start from a small Python base image
-WORKDIR /app                 # set the working directory inside the image
-COPY app.py .                # copy our code in
-EXPOSE 8000                  # document the port
-CMD ["python", "app.py"]     # what to run when the container starts
+# Start from a small Python base image
+FROM python:3.12-slim
+
+# Set the working directory inside the image
+WORKDIR /app
+
+# Copy our code in
+COPY app.py .
+
+# Document the port the app listens on
+EXPOSE 8000
+
+# What to run when the container starts
+CMD ["python", "app.py"]
 ```
+
+> Note the comments sit on their **own lines**. In a Dockerfile, a `#` after an instruction is
+> *not* a comment — it becomes part of the instruction's arguments and breaks the build with a
+> confusing parse error. Comment lines must start with `#`.
 
 Build and run it:
 

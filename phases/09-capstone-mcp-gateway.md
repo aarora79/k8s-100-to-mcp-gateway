@@ -11,6 +11,21 @@ lean on Claude Code. That's the intended experience.
 
 ---
 
+## Before you start — the capstone retrieval check
+
+If any of these takes more than a few seconds, revisit that phase first — the capstone will use
+every one of them under pressure:
+
+1. A pod is `CrashLoopBackOff`. What two commands do you run, in what order? *(Phase 4)*
+2. A Service exists but requests to it hang. What's the smoking-gun command? *(Phase 6)*
+3. Your app needs a database password. Which object holds it, and how does it get into the
+   container? *(Phase 5)*
+4. Why will the Registry API be able to reach MongoDB at `mongodb:27017` with zero networking
+   config? *(Phases 2 & 6)*
+5. What happened in Phase 8 when you deleted the Redis pod before adding a PVC?
+
+---
+
 ## Step 0 — Understand what you're deploying
 
 `mcp-gateway-registry` (from `agentic-community/mcp-gateway-registry`) is an enterprise MCP Gateway
@@ -18,7 +33,7 @@ lean on Claude Code. That's the intended experience.
 pieces:
 
 | Component | What it is | Kubernetes shape it becomes |
-|-----------|-----------|-----------------------------|
+| --------- | --------- | --------------------------- |
 | Registry API | FastAPI service — catalog, semantic search, UI (port ~7860) | Deployment + Service (+ Ingress) |
 | Auth server | FastAPI — OAuth 2.0/OIDC | Deployment + Service |
 | MCP Gateway | nginx + `mcpgw` reverse proxy / router (ports 80/443, 8000+) | Deployment + Service (or Ingress) |
@@ -51,7 +66,7 @@ compare against how Compose ran it.
 Open `docker-compose.yml` in the cloned repo. Compose and Kubernetes map almost concept-for-concept:
 
 | Docker Compose | Kubernetes equivalent |
-|----------------|----------------------|
+| -------------- | -------------------- |
 | a `service:` | a Deployment + a Service |
 | `image:` | container `image:` in the Deployment |
 | `build:` | build the image first (`docker build`), push/load it, then reference it |
@@ -88,18 +103,24 @@ Bring the stack up **one tier at a time**, verifying each before adding the next
 difference between a calm afternoon and a frustrating one.
 
 1. **Namespace + config**
+
    ```bash
    kubectl create namespace mcp-gateway
    kubectl apply -f manifests/mcp-gateway/configmap.yaml
    kubectl apply -f manifests/mcp-gateway/secret.yaml     # keep real secrets OUT of git
    ```
-2. **MongoDB first** (everything depends on data). Deploy it, give it a PVC, and confirm it's
-   `Running` and reachable by the name `mongodb` before moving on. You can even reuse the Helm
-   MongoDB from Phase 7 instead of hand-writing it.
+
+2. **MongoDB first** (everything depends on data). Write it yourself with the official `mongo`
+   image — a Deployment + Service + PVC, the exact pattern you built for Redis in the Phase 8
+   challenge (root credentials come from your Secret via `MONGO_INITDB_ROOT_USERNAME` /
+   `MONGO_INITDB_ROOT_PASSWORD` env vars; mount the PVC at `/data/db`, where MongoDB stores its
+   data). Confirm it's `Running` and reachable by the name `mongodb` before moving on.
+
    ```bash
    kubectl apply -f manifests/mcp-gateway/mongodb.yaml -n mcp-gateway
    kubectl get pods -n mcp-gateway --watch
    ```
+
 3. **Auth server** — deploy, check logs, confirm it starts and finds Mongo.
 4. **Registry API** — deploy, check it connects to Mongo and Auth.
 5. **MCP Gateway (nginx)** — deploy last; it fronts the others.
@@ -119,10 +140,12 @@ local cluster you have two clean options:
 - **Use the project's prebuilt images** if it publishes them (the README mentions `--prebuilt` and
   "pre-built Docker images"). Reference those image names directly — simplest.
 - **Build locally and load into the cluster.** With `kind`:
+
   ```bash
   docker build -t mcpgw/registry:dev ./path/to/service
   kind load docker-image mcpgw/registry:dev --name learn   # makes the image available to kind nodes
   ```
+
   Then set `image: mcpgw/registry:dev` and `imagePullPolicy: IfNotPresent` in the Deployment so
   Kubernetes doesn't try to fetch it from the internet. (On Docker Desktop, locally-built images
   are already visible to the cluster — no load step needed.)
@@ -197,12 +220,16 @@ You now understand *both*, which is the whole point. That's a real, employable s
 
 ## Ask Claude Code (your main capstone partners)
 
-> Kick-off: I've cloned `mcp-gateway-registry` and it runs under Docker Compose. Help me port it to
+**Kick-off:**
+
+> I've cloned `mcp-gateway-registry` and it runs under Docker Compose. Help me port it to
 > my local Kubernetes cluster in the `mcp-gateway` namespace, one tier at a time starting with
 > MongoDB. Read the `docker-compose.yml`, and for the first tier only, generate the manifests,
 > explain them, and give me the exact `kubectl` commands to deploy and verify before we move on.
 
-> Debugging: my `registry` pod is `CrashLoopBackOff`. Here's `kubectl describe pod` and
+**Debugging:**
+
+> My `registry` pod is `CrashLoopBackOff`. Here's `kubectl describe pod` and
 > `kubectl logs`: [paste]. It ran fine under Compose. Compare the two and tell me what config the
 > Kubernetes version is missing.
 

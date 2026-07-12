@@ -13,7 +13,7 @@ paste to go deeper or get unstuck.
 
 ## Who this is for
 
-You (Amit). Specifically someone who:
+Someone who:
 
 - Is comfortable in a terminal but new to containers and Kubernetes.
 - Learns best by *doing* small things and building up.

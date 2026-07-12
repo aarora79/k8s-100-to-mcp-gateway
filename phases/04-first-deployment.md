@@ -3,7 +3,20 @@
 **Goal:** deploy an app to your cluster, expose it, scale it, break it, and heal it — the core
 loop you'll repeat forever.
 
-**Time:** ~1–1.5 hours.
+**Time:** ~1.5–2 hours.
+
+---
+
+## Before you start — 60 seconds of retrieval
+
+Answer from memory, out loud or on paper (checking yourself later beats re-reading):
+
+1. What's the difference between an **image** and a **container**? *(Phase 1)*
+2. What does **declarative** mean, and *who* keeps reality matching your declaration? *(Phase 2)*
+3. Which command tells you **which cluster** kubectl is currently pointed at? *(Phase 3)*
+
+Answers are in the linked phases and the [glossary](../reference/glossary.md). If any felt shaky,
+30 seconds of review now pays off all phase.
 
 ---
 
@@ -156,6 +169,26 @@ kubectl rollout undo deployment/web            # roll back if needed
 Notice the update replaced Pods **gradually**, keeping the app available throughout. That's a
 zero-downtime deploy — one of the big reasons Kubernetes exists.
 
+> **What actually happened under the hood (the ReplicaSet's real job).** Remember from Phase 2:
+> a ReplicaSet can only keep copies of *one fixed Pod template* running — it's dumb about
+> versions. So the Deployment didn't modify your old ReplicaSet; it created a **new** ReplicaSet
+> for the new image and gradually scaled it up while scaling the old one down to zero:
+>
+> ```text
+> Deployment "web"        "run nginx:1.28, 5 replicas, update safely"
+>    ├── ReplicaSet (new)   "keep exactly 5 Pods matching nginx:1.28"
+>    │     ├── Pod   ← replica 1
+>    │     ├── Pod   ← ... up to replica 5
+>    └── ReplicaSet (old)   "keep exactly 0" (nginx:1.27 — kept for rollback)
+> ```
+>
+> That's also why `kubectl rollout undo` is instant: rollback just means scaling the old
+> ReplicaSet back up. Prove it to yourself:
+>
+> ```bash
+> kubectl get replicasets -l app=web    # two ReplicaSets: new one at 5, old one at 0
+> ```
+
 ---
 
 ## Inspect and debug (learn these now, use them forever)
@@ -171,6 +204,74 @@ kubectl get events --sort-by=.metadata.creationTimestamp   # recent cluster even
 
 When something is wrong, the order is almost always: `get pods` → `describe pod` (read Events) →
 `logs`. Memorize that flow.
+
+---
+
+## Break it on purpose (the two failures you'll see forever)
+
+Reading about failures teaches little; *causing* them safely teaches a lot. You'll meet these two
+statuses more than any others — meet them now, on your terms, with the debugging flow you just
+learned.
+
+### Failure 1: `ImagePullBackOff` — the image can't be fetched
+
+With your `web` deployment still running, roll out an image tag that doesn't exist:
+
+```bash
+kubectl set image deployment/web nginx=nginx:no-such-tag
+kubectl get pods -l app=web        # watch: a NEW pod shows ImagePullBackOff / ErrImagePull
+```
+
+Two lessons at once here. First, diagnose it:
+
+```bash
+kubectl describe pod <the-failing-pod>    # Events say: "manifest unknown" / pull failed
+```
+
+Second — notice your **old pods are still Running and serving**. The rolling update refused to
+kill healthy pods before their replacements were ready. Kubernetes protected you from your own
+typo. Now recover:
+
+```bash
+kubectl rollout undo deployment/web
+kubectl get pods -l app=web               # all healthy again
+```
+
+### Failure 2: `CrashLoopBackOff` — the container starts, then dies
+
+```bash
+kubectl run crasher --image=busybox -- sh -c "echo BOOM: missing config; exit 1"
+kubectl get pods crasher --watch          # Running → Error → CrashLoopBackOff (Ctrl-C to stop)
+```
+
+Kubernetes keeps restarting it with growing delays (that's the "BackOff"). Diagnose:
+
+```bash
+kubectl logs crasher                      # -> BOOM: missing config  (the app's last words)
+kubectl describe pod crasher              # Last State: Terminated, Exit Code: 1, Restart Count climbing
+kubectl delete pod crasher
+```
+
+The key distinction to internalize: **ImagePullBackOff = Kubernetes' problem getting your image**
+(typo, missing tag, private registry). **CrashLoopBackOff = your app's problem after starting**
+(missing config, can't reach a dependency, bad command) — the clue is almost always in `logs`.
+This distinction will earn its keep in the capstone.
+
+---
+
+## Challenge — no training wheels ✋
+
+Everything above was handed to you. Now prove you own it. **From a blank file, without looking
+at the YAML earlier in this phase:**
+
+1. Deploy Apache httpd (`image: httpd:2.4`, container port 80) with **2 replicas**, in a file
+   `manifests/challenge-httpd.yaml`.
+2. Put a Service in front of it and reach it at `http://localhost:8081` via port-forward.
+3. Delete one pod and confirm it self-heals.
+4. Clean up with a single `kubectl delete -f` command.
+
+Struggle for ten minutes before asking Claude Code for hints — retrieval with effort is where
+the learning happens. (Type it; the YAML extension will help you with field names.)
 
 ---
 
@@ -191,14 +292,24 @@ Deleting the same file you applied is the tidy way to remove exactly what you cr
 - [ ] You created a Service and reached the app through it.
 - [ ] You scaled, did a rolling update, and rolled back.
 - [ ] You deleted a Pod and watched Kubernetes recreate it.
+- [ ] You caused — and diagnosed — an `ImagePullBackOff` and a `CrashLoopBackOff` on purpose.
+- [ ] You completed the httpd challenge from a blank file.
 - [ ] You can name the `get pods → describe → logs` debugging flow.
 
 ---
 
 ## Ask Claude Code
 
-> Here's my `web-deployment.yaml` and the output of `kubectl get pods -l app=web` showing a pod
-> stuck in `ImagePullBackOff` (or `CrashLoopBackOff`): [paste]. Explain what that status means and
-> how I diagnose it step by step.
+**Teach-back** (do this one — it's the best retention tool you have):
+
+> Here are my `web-deployment.yaml` and `web-service.yaml`: [paste]. Quiz me on them line by
+> line — one question at a time, asking what each field does and what would break if I removed
+> or changed it. Tell me when I'm right, and correct my mental model when I'm fuzzy.
+
+**Debugging practice:**
+
+> Here's my YAML and the output of `kubectl get pods -l app=web` showing a pod stuck in
+> `ImagePullBackOff` (or `CrashLoopBackOff`): [paste]. Explain what that status means and how I
+> diagnose it step by step.
 
 **Next:** [Phase 5 — Config, secrets, and storage](05-config-and-storage.md)

@@ -79,13 +79,13 @@ Use these to scaffold a manifest, then edit it — faster than writing from scra
 
 ## Helm quickies
 ```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami && helm repo update
-helm search repo mongodb
-helm install mongo bitnami/mongodb -n data --create-namespace
+helm repo add podinfo https://stefanprodan.github.io/podinfo && helm repo update
+helm search repo podinfo
+helm install my-podinfo podinfo/podinfo -n demo --create-namespace
 helm list -A
-helm uninstall mongo -n data
+helm uninstall my-podinfo -n demo
 helm template <chart>                   # render without installing
-helm show values bitnami/mongodb        # all configurable values
+helm show values podinfo/podinfo        # all configurable values (ALWAYS check before install)
 ```
 
 ## kind quickies

@@ -7,6 +7,19 @@ Pods die. The capstone needs all three (the app has a `.env` file and a database
 
 ---
 
+## Before you start — 60 seconds of retrieval
+
+From memory:
+
+1. Why do we almost never create Pods directly — what do we create instead? *(Phase 2/4)*
+2. In Phase 4's break-lab, what was the difference between `ImagePullBackOff` and
+   `CrashLoopBackOff`? *(One of today's demos can cause the second one — missing config.)*
+3. From Phase 1: what happens to files written inside a container when the container is deleted?
+
+That third answer is exactly the problem the second half of this phase solves.
+
+---
+
 ## Why this phase matters for the capstone
 
 `mcp-gateway-registry` is configured with a `.env` file (database credentials, identity-provider
@@ -117,7 +130,7 @@ spec:
       storage: 1Gi
 ```
 
-Use it in a Pod by mounting it:
+Use it in a Pod by mounting it. `manifests/storage-demo-pod.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -158,6 +171,24 @@ That surviving line is the whole point: the PVC outlived the Pod.
 
 ---
 
+## Challenge — no training wheels ✋
+
+From blank files, without looking at the YAML above:
+
+1. Create a ConfigMap `challenge-config` with keys `COLOR=blue` and `SIZE=large`, **and** a
+   Secret `challenge-secret` with key `TOKEN=s3cret` (imperative `kubectl create secret` is fine).
+2. Write a Pod that injects *both* as env vars and prints all three values with `env | grep -E
+   'COLOR|SIZE|TOKEN'` before sleeping.
+3. Verify with `kubectl logs`, then clean everything up.
+
+Bonus (extends Phase 4's break-lab): delete the Secret and recreate the Pod. You'll meet a *new*
+status — `CreateContainerConfigError` — because the Pod references config that doesn't exist, so
+the container can't even start. `kubectl describe pod` names the missing Secret. Add it to your
+mental collection: **ImagePullBackOff** (can't get the image), **CreateContainerConfigError**
+(can't assemble the config), **CrashLoopBackOff** (started, then died).
+
+---
+
 ## Clean up
 
 ```bash
@@ -174,6 +205,7 @@ kubectl delete secret db-credentials
 - [ ] Inject config into a Pod via a ConfigMap (env vars).
 - [ ] Create a Secret and explain how it differs from a ConfigMap (and the base64 caveat).
 - [ ] Create a PVC, mount it, and prove data survives a Pod deletion.
+- [ ] Complete the challenge from blank files, including the missing-Secret bonus.
 
 ---
 
