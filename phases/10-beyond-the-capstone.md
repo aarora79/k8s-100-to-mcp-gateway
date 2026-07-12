@@ -296,8 +296,8 @@ Each of these is its own rabbit hole; you now have the foundation for all of the
 **RBAC** (who may do what in the cluster), **NetworkPolicies** (firewalls between Pods),
 **PodDisruptionBudgets** (protecting availability during node maintenance), **Operators/CRDs**
 (teaching Kubernetes new object types), and **GitOps** (Argo CD / Flux — your `kubectl apply`
-loop, automated from git). Ask Claude Code for a Phase-style walkthrough of any of them when
-you're ready.
+loop, automated from git). All of these — and the rest of the expert-level map — are explained
+in plain English in [Phase 12](12-expert-concepts.md).
 
 ---
 

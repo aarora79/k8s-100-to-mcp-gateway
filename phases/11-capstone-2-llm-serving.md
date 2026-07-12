@@ -366,3 +366,6 @@ kubectl delete namespace llm      # removes everything in it, PVC included — o
 **Two capstones done.** You've deployed a multi-service web application *and* an AI model server
 — the two workload shapes that dominate modern infrastructure. The vocabulary you now have is
 the same one used in production clusters serving millions of requests.
+
+**Next (reading, not doing):** [Phase 12 — the expert concept map](12-expert-concepts.md) —
+the 300–400 level, explained in the plain English you're used to.

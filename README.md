@@ -75,6 +75,7 @@ Suggested VS Code extensions (install in Phase 0):
 | 9 | [phases/09-capstone-mcp-gateway.md](phases/09-capstone-mcp-gateway.md) | **Capstone:** run `mcp-gateway-registry` on Kubernetes | 300 |
 | 10 | [phases/10-beyond-the-capstone.md](phases/10-beyond-the-capstone.md) | Requests/limits, autoscaling (HPA, Karpenter), node affinity & taints | 350 |
 | 11 | [phases/11-capstone-2-llm-serving.md](phases/11-capstone-2-llm-serving.md) | **Capstone 2:** serve an open-source LLM (Gemma 4) + Prometheus/Grafana, with a vLLM/GPU cloud track | 350 |
+| 12 | [phases/12-expert-concepts.md](phases/12-expert-concepts.md) | The expert concept map — theory-only reading, no cluster needed | 400 |
 
 Reference material you'll come back to:
 
