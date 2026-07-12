@@ -140,3 +140,49 @@ Diagnose with `describe` + `logs`.
 
 **ImagePullBackOff** — Kubernetes can't fetch the image (wrong name, missing, or not loaded into
 the cluster). (Phase 9, Step 3)
+
+---
+
+## Names you'll hear in the wild
+
+Kubernetes itself is open source; what you actually *run* is always some packaging of it. These
+names come up constantly — none change what you've learned, since they all speak the same API
+and `kubectl`:
+
+**Distribution (distro)** — a packaged, opinionated build of Kubernetes, exactly like Linux
+distros. "Vanilla" or "upstream" means the unmodified open-source project.
+
+**k3s** — a popular *lightweight* distribution (SUSE/Rancher): the whole cluster in one small
+binary, with heavyweight internals swapped for lighter ones. The default choice for edge
+devices, Raspberry Pis, and homelabs. **k0s** and **microk8s** are similar ideas from other
+vendors.
+
+**k9s** — confusingly named but totally different: a terminal *UI for kubectl* — browse pods,
+logs, and events interactively. A tool you run, not a cluster. (Genuinely useful; try it.)
+
+**kubeadm** — the official bootstrapper for building a cluster on machines you own. It's what
+`kind` uses internally on its fake nodes.
+
+**EKS / GKE / AKS** — *managed* Kubernetes from AWS / Google / Azure: the cloud runs the control
+plane (and with EKS Auto Mode / GKE Autopilot, the nodes too); you bring workloads. This is how
+most companies run Kubernetes.
+
+**OpenShift** — Red Hat's enterprise distribution: Kubernetes plus built-in CI/CD, registry,
+stricter security defaults, and commercial support. Common in large/regulated companies.
+
+**Rancher** — a management layer for running *many* clusters from one UI (same company as k3s).
+
+**Talos** — a minimal, immutable Linux OS that exists only to run Kubernetes — no SSH, no shell;
+you manage the OS itself through an API. Where serious self-hosted clusters are heading.
+
+**kustomize** — Helm's template-free rival for customizing YAML: overlay patches on top of base
+manifests instead of filling in `{{ placeholders }}`. Built into kubectl (`kubectl apply -k`).
+Teams commonly use both: Helm for third-party apps, kustomize for their own.
+
+**CNCF** — the Cloud Native Computing Foundation, the vendor-neutral home of Kubernetes,
+Prometheus, Helm, and hundreds more. "A CNCF graduated project" is a maturity signal you can
+roughly trust.
+
+**OCI** — the Open Container Initiative: the standards for image formats and registries. Why an
+image built by Docker runs under containerd, and why Helm charts can be stored in the same
+registries as images ("OCI registry").
