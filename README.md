@@ -83,6 +83,7 @@ Reference material you'll come back to:
 - [reference/kubectl-cheatsheet.md](reference/kubectl-cheatsheet.md) — the commands you'll actually use
 - [reference/troubleshooting.md](reference/troubleshooting.md) — "it's broken, now what"
 - [manifests/](manifests/) — YAML you'll write and reuse
+- [journal/](journal/learning-log.md) — a running log of detours and "aha" moments while working through the phases (dated entries; keep your own!)
 
 ---
 

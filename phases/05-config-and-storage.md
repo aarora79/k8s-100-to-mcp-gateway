@@ -86,6 +86,9 @@ values you don't want to hand-encode):
 kubectl create secret generic db-credentials \
   --from-literal=MONGO_USER=admin \
   --from-literal=MONGO_PASSWORD='sup3r-s3cret'
+# "generic" = the secret's TYPE (opaque key/values — what you want 95% of the time;
+#             other types exist for TLS certs and registry logins)
+# "db-credentials" = a name you choose;  each --from-literal adds one KEY=VALUE pair
 kubectl get secret db-credentials -o yaml   # note values are base64-encoded
 ```
 

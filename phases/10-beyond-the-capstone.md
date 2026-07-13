@@ -163,6 +163,8 @@ Label a node, then require the label:
 
 ```bash
 kubectl label node learn-worker disk=fast
+#                  └─ which node └─ a key=value YOU INVENT — "disk" and "fast" mean nothing
+#                     to Kubernetes; they only have to match what your Pods ask for below
 ```
 
 Add to a Pod template's `spec` (alongside `containers:`):
@@ -213,6 +215,10 @@ explicitly tolerate it. This is how you reserve nodes:
 
 ```bash
 kubectl taint node learn-worker2 reserved=ml:NoSchedule
+#                                └─ key=value : EFFECT — key/value are yours to invent (like
+#                                   labels); the effect is one of a fixed set: NoSchedule
+#                                   (don't place new Pods), PreferNoSchedule (avoid if you
+#                                   can), NoExecute (also EVICT Pods already there)
 kubectl rollout restart deployment sized             # force rescheduling (remove the nodeSelector first)
 kubectl get pods -o wide                             # nothing lands on learn-worker2 anymore
 ```

@@ -59,6 +59,9 @@ kubectl create namespace demo
 helm install my-podinfo podinfo/podinfo \
   --namespace demo \
   --set replicaCount=2
+# helm install <RELEASE-NAME> <repo/chart>
+#              └─ a name YOU choose for this installed copy ("release");
+#                 the second arg is which chart, as <repo-you-added>/<chart-name>
 
 kubectl get pods -n demo --watch           # wait for 2 podinfo pods to be Running
 ```

@@ -56,7 +56,9 @@ nodes:
 
 ```bash
 kind create cluster --name learn --config kind-config.yaml
-kubectl config use-context kind-learn      # kind sets this context up for you
+#                          └─ "learn" is a name you choose for the cluster; you'll repeat it in
+#                             every later kind command (and it names the nodes: learn-worker…)
+kubectl config use-context kind-learn      # kind creates the context as kind-<your-name>
 kubectl get nodes                          # THREE nodes now (1 control-plane, 2 workers)!
 ```
 
@@ -199,7 +201,9 @@ That value made a round trip: your laptop → Ingress → `api` Service → a po
 it — ask Redis directly:
 
 ```bash
-kubectl exec deploy/redis -- redis-cli keys '*'   # there's your key, inside the redis Pod
+kubectl exec deploy/redis -- redis-cli keys '*'
+#            └─ deploy/<name> picks a pod FROM that deployment (saves you copying pod names);
+#               after the "--", the command runs inside the container: redis's own CLI
 ```
 
 You now have multiple tiers, each behind a Service, one exposed through Ingress, with the API

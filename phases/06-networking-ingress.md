@@ -25,7 +25,7 @@ From memory:
 A Service gives Pods a stable address. *Which* address, and who can reach it, depends on the type:
 
 | Type | Reachable from | Use it for |
-|------|----------------|-----------|
+| ---- | -------------- | --------- |
 | **ClusterIP** (default) | *Inside* the cluster only | Service-to-service calls (API → database) |
 | **NodePort** | Outside, via `<node-ip>:<high-port>` | Quick external access while learning |
 | **LoadBalancer** | Outside, via a real load balancer | Cloud production; on Docker Desktop it maps to `localhost` |
@@ -40,7 +40,7 @@ Ingress (below). You rarely want dozens of NodePorts.
 This is the feature that makes multi-service apps sane. Every Service gets a DNS name inside the
 cluster:
 
-```
+```text
 <service-name>.<namespace>.svc.cluster.local
 ```
 
@@ -52,8 +52,11 @@ Try it. Deploy two things and have one call the other by name:
 
 ```bash
 kubectl create deployment web --image=nginx
-kubectl expose deployment web --port=80          # creates a ClusterIP Service named "web"
+kubectl expose deployment web --port=80
+# "expose X" = make a Service pointing at X's pods; the Service inherits the name "web"
 kubectl run tester --rm -it --image=busybox -- sh
+# "tester" = pod name you choose; --rm = delete the pod when you exit;
+# -it = interactive terminal; after "--" runs inside the container (here: a shell)
 #   inside the tester pod:
 wget -qO- http://web           # reaches nginx by SERVICE NAME. exit when done.
 kubectl delete deployment web && kubectl delete service web

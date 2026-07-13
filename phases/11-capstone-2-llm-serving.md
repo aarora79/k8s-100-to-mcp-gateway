@@ -141,6 +141,9 @@ Phase 4's debugging toolkit:
 ```bash
 kubectl exec -n llm deploy/ollama -- ollama pull gemma4:e2b    # 7.2GB — go make coffee
 kubectl exec -n llm deploy/ollama -- ollama list               # it's there
+#            └─ namespace  └─ picks a pod from the "ollama" Deployment; after the "--",
+#               "ollama pull/list" is Ollama's OWN CLI running inside the container
+#               (the deployment and the binary just happen to share a name)
 ```
 
 (`gemma4:e2b` is Gemma 4's smallest build — "e2b" means roughly *effective 2B parameters*

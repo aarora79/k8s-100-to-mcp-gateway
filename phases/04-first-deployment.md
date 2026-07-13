@@ -26,10 +26,25 @@ Let's deploy nginx the quick way first, just to watch the objects appear:
 
 ```bash
 kubectl create deployment web --image=nginx
+#              └─ object kind └─ "web" is a NAME YOU CHOOSE for this deployment
+#                                (the image is nginx; the deployment could be called anything)
 kubectl get deployments          # 1 deployment, becoming ready
 kubectl get replicasets          # the ReplicaSet the deployment created
 kubectl get pods                 # the Pod the ReplicaSet created
 ```
+
+> **How to read kubectl commands (learn the grammar once).** Almost every command is
+> `kubectl <verb> <kind> <name> [flags]`:
+>
+> - The **verb** (`create`, `get`, `describe`, `delete`, `scale`…) is what to do.
+> - The **kind** (`deployment`, `pod`, `service`…) is what type of object.
+> - The **name** (`web`) identifies *which one* — and when you're creating, it's simply the
+>   name you're giving it. Kubernetes attaches no meaning to `web`; `frontend` or `bob` would
+>   work the same.
+> - You'll also see the slash form `deployment/web` — same thing as `deployment web`, just one
+>   token, used where a command takes several arguments (like `port-forward` below).
+> - A bare `--` means "kubectl flags end here; everything after runs *inside the container*"
+>   (you saw the same convention with `docker run` in Phase 1).
 
 See the chain from Phase 2 made real: **Deployment → ReplicaSet → Pod**. Watch it live:
 
@@ -43,6 +58,8 @@ The Pod is running but not reachable from your browser yet. The quickest way to 
 
 ```bash
 kubectl port-forward deployment/web 8080:80
+#                                   └─ your-Mac-port : container-port
+#                                      (local first, remote second — same order as docker -p)
 # now open http://localhost:8080  (Ctrl-C to stop the forward)
 ```
 
@@ -161,6 +178,9 @@ kubectl get pods -l app=web                    # now 5
 
 # Roll out a new image version (a "rolling update"):
 kubectl set image deployment/web nginx=nginx:1.28
+#                                └─ CONTAINER name (from the YAML's containers: name: nginx)
+#                                   = the new IMAGE. Not "image called nginx" — a pod can hold
+#                                   several containers, so you must say which one to update.
 kubectl rollout status deployment/web          # watch it replace pods gradually
 kubectl rollout history deployment/web         # see revisions
 kubectl rollout undo deployment/web            # roll back if needed
@@ -241,6 +261,7 @@ kubectl get pods -l app=web               # all healthy again
 
 ```bash
 kubectl run crasher --image=busybox -- sh -c "echo BOOM: missing config; exit 1"
+#           └─ pod name you choose      └─ after the "--", this is the command run INSIDE the container
 kubectl get pods crasher --watch          # Running → Error → CrashLoopBackOff (Ctrl-C to stop)
 ```
 

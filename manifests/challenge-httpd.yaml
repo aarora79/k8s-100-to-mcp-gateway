@@ -1,0 +1,30 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 2                    # we want TWO copies
+  selector:
+    matchLabels:
+      app: web                   # this Deployment manages Pods with label app=web
+  template:                      # the Pod blueprint
+    metadata:
+      labels:
+        app: web                 # Pods get this label (must match selector above)
+    spec:
+      containers:
+        - name: httpd
+          image: httpd:2.4
+          ports:
+            - containerPort: 90        # now truthful — Apache really listens here
+          volumeMounts:
+            - name: conf
+              mountPath: /usr/local/apache2/conf/httpd.conf
+              subPath: httpd.conf      # mount ONLY this file, not a whole directory
+      volumes:
+        - name: conf
+          configMap:
+            name: httpd-conf

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web                     # send traffic to Pods labeled app=web
+  ports:
+    - port: 90                   # the Service's port
+      targetPort: 90             # the container's port
+  type: ClusterIP                # reachable inside the cluster (default)
