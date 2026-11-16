@@ -1,3 +1,5 @@
+> **This repo is archived.** It is no longer updated. To learn Kubernetes, read [k8s-book](https://github.com/aarora79/k8s-book) instead (online at [aarora79.github.io/k8s-book](https://aarora79.github.io/k8s-book/)), which teaches Kubernetes by rebuilding its parts in Go.
+
 # Kubernetes: from 100-level to running the MCP Gateway Registry
 
 A step-by-step learning path for going from **"I have a very basic understanding"** to
